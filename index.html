@@ -345,25 +345,25 @@ const T = {
 
 // 16 R32 matches (4 pages × 4 matches)
 const R32 = [
-  // Page 1
-  { t1:'south-africa', t2:'canada',     venue:'SoFi Stadium',           city:'Los Angeles, CA',         date:'Jun 28' },
-  { t1:'brazil',       t2:'japan',      venue:'NRG Stadium',             city:'Houston, TX',             date:'Jun 29' },
+  // Page 1 (Left side, M1-M4)
   { t1:'germany',      t2:'paraguay',   venue:'Gillette Stadium',        city:'Foxborough (Boston), MA', date:'Jun 29' },
-  { t1:'netherlands',  t2:'morocco',    venue:'Estadio BBVA',            city:'Monterrey, Mexico',       date:'Jun 29' },
-  // Page 2
-  { t1:'ivory-coast',  t2:'norway',     venue:'AT&T Stadium',            city:'Arlington (Dallas), TX',  date:'Jun 30' },
   { t1:'france',       t2:'sweden',     venue:'MetLife Stadium',         city:'East Rutherford (NY), NJ',date:'Jun 30' },
-  { t1:'mexico',       t2:'ecuador',    venue:'Estadio Azteca',          city:'Mexico City, Mexico',     date:'Jun 30' },
-  { t1:'england',      t2:'dr-congo',   venue:'Mercedes-Benz Stadium',   city:'Atlanta, GA',             date:'Jul 1'  },
-  // Page 3
+  { t1:'south-africa', t2:'canada',     venue:'SoFi Stadium',            city:'Los Angeles, CA',         date:'Jun 28' },
+  { t1:'netherlands',  t2:'morocco',    venue:'Estadio BBVA',            city:'Monterrey, Mexico',       date:'Jun 29' },
+  // Page 2 (Left side, M5-M8)
+  { t1:'portugal',     t2:'croatia',    venue:'BMO Field',               city:'Toronto, Canada',         date:'Jul 2'  },
+  { t1:'spain',        t2:'austria',    venue:'SoFi Stadium',            city:'Los Angeles, CA',         date:'Jul 2'  },
   { t1:'usa',          t2:'bosnia',     venue:"Levi's Stadium",          city:'San Jose (SF Bay), CA',   date:'Jul 1'  },
   { t1:'belgium',      t2:'senegal',    venue:'Lumen Field',             city:'Seattle, WA',             date:'Jul 1'  },
-  { t1:'spain',        t2:'austria',    venue:'SoFi Stadium',            city:'Los Angeles, CA',         date:'Jul 2'  },
-  { t1:'portugal',     t2:'croatia',    venue:'BMO Field',               city:'Toronto, Canada',         date:'Jul 2'  },
-  // Page 4
-  { t1:'switzerland',  t2:'algeria',    venue:'BC Place',                city:'Vancouver, Canada',       date:'Jul 2'  },
-  { t1:'australia',    t2:'egypt',      venue:'AT&T Stadium',            city:'Arlington (Dallas), TX',  date:'Jul 3'  },
+  // Page 3 (Right side, M9-M12)
+  { t1:'brazil',       t2:'japan',      venue:'NRG Stadium',             city:'Houston, TX',             date:'Jun 29' },
+  { t1:'ivory-coast',  t2:'norway',     venue:'AT&T Stadium',            city:'Arlington (Dallas), TX',  date:'Jun 30' },
+  { t1:'mexico',       t2:'ecuador',    venue:'Estadio Azteca',          city:'Mexico City, Mexico',     date:'Jun 30' },
+  { t1:'england',      t2:'dr-congo',   venue:'Mercedes-Benz Stadium',   city:'Atlanta, GA',             date:'Jul 1'  },
+  // Page 4 (Right side, M13-M16)
   { t1:'argentina',    t2:'cape-verde', venue:'Hard Rock Stadium',       city:'Miami Gardens, FL',       date:'Jul 3'  },
+  { t1:'australia',    t2:'egypt',      venue:'AT&T Stadium',            city:'Arlington (Dallas), TX',  date:'Jul 3'  },
+  { t1:'switzerland',  t2:'algeria',    venue:'BC Place',                city:'Vancouver, Canada',       date:'Jul 2'  },
   { t1:'colombia',     t2:'ghana',      venue:'Arrowhead Stadium',       city:'Kansas City, MO',         date:'Jul 3'  },
 ];
 
@@ -428,6 +428,17 @@ function renderR32() {
     const t1 = T[m.t1], t2 = T[m.t2];
     const pick = S.picks.r32[idx];
     const isEaster = m.t1 === 'colombia' && m.t2 === 'ghana';
+    const isSACanada = m.t1 === 'south-africa' && m.t2 === 'canada';
+
+    let easterMsg = '';
+    if (isEaster) {
+      easterMsg = `<div class="easter${pick==='colombia'?' show':''}" id="ee-${idx}">😤 Going against Ghana? I hate you</div>`;
+    } else if (isSACanada && pick) {
+      const msg = pick === 'canada'
+        ? "You love free stuff don't you. 😝"
+        : "you can't be that bad at this 🤦";
+      easterMsg = `<div class="easter show" id="ee-${idx}">${msg}</div>`;
+    }
 
     html += `<div class="card">
       <div class="card-hdr">
@@ -447,7 +458,7 @@ function renderR32() {
           <div class="tshort">${t2.short}</div>
         </button>
       </div>
-      ${isEaster ? `<div class="easter${pick==='colombia'?' show':''}" id="ee-${idx}">😤 Going against Ghana? I hate you</div>` : ''}
+      ${easterMsg}
     </div>`;
   }
 
