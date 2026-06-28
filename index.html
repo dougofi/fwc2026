@@ -165,22 +165,6 @@ body{font-family:'Roboto',sans-serif;background:var(--bg);min-height:100vh;color
 .champ-reveal h3{font-size:14px;color:var(--txt2);text-transform:uppercase;letter-spacing:1px}
 .champ-reveal h2{font-size:24px;font-weight:900;color:var(--navy);margin-top:4px}
 
-/* ── MUSIC FAB ── */
-/*
-#music-fab{
-  position:fixed;bottom:72px;right:14px;z-index:400;
-  width:42px;height:42px;border-radius:50%;
-  background:var(--red);color:#fff;font-size:20px;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 3px 10px rgba(0,0,0,.4);cursor:pointer;
-  touch-action:manipulation;user-select:none
-}
-#music-panel{
-  position:fixed;bottom:120px;right:14px;z-index:400;
-  display:none;border-radius:10px;overflow:hidden;
-  box-shadow:0 4px 16px rgba(0,0,0,.5)
-}
-*/
 
 /* ── LANDSCAPE BRACKET ── */
 @media (orientation:landscape){
@@ -192,15 +176,6 @@ body{font-family:'Roboto',sans-serif;background:var(--bg);min-height:100vh;color
 </style>
 </head>
 <body>
-
-<!-- Floating music button -->
-<!--
-<div id="music-fab" onclick="toggleMusic()" title="Play Waka Waka 🎶">🎵</div>
-<div id="music-panel">
-  <iframe id="yt-frame" width="200" height="113" frameborder="0"
-    allow="autoplay;encrypted-media" allowfullscreen></iframe>
-</div>
--->
 
 <!-- ══════════════════════════════════════
      WELCOME SCREEN
@@ -406,28 +381,6 @@ const S = {
     final: null
   }
 };
-
-// ══════════════════════════════════
-// MUSIC (Shakira – Waka Waka)
-// ══════════════════════════════════
-/*
-let musicOn = false;
-function toggleMusic() {
-  musicOn = !musicOn;
-  const fab = document.getElementById('music-fab');
-  const panel = document.getElementById('music-panel');
-  const frame = document.getElementById('yt-frame');
-  if (musicOn) {
-    frame.src = 'https://www.youtube.com/embed/pRpeEdMmmQ0?autoplay=1&loop=1&playlist=pRpeEdMmmQ0';
-    panel.style.display = 'block';
-    fab.textContent = '🔇';
-  } else {
-    frame.src = '';
-    panel.style.display = 'none';
-    fab.textContent = '🎵';
-  }
-}
-*/
 
 // ══════════════════════════════════
 // SCREEN NAVIGATION
