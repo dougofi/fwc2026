@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>FIFA World Cup 2026 – Bracket Predictor</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --navy:#1a237e;--dark-navy:#000051;--red:#c62828;--gold:#f9a825;
+  --bg:#e8eaf6;--card:#fff;--txt:#212121;--txt2:#757575;
+  --sh2:0 3px 6px rgba(0,0,0,.16),0 3px 6px rgba(0,0,0,.23);
+}
+body{font-family:'Roboto',sans-serif;background:var(--bg);min-height:100vh;color:var(--txt);overflow-x:hidden}
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+
+/* ── HEADER ── */
+.hdr{
+  background:linear-gradient(135deg,var(--dark-navy) 0%,var(--navy) 60%,var(--red) 100%);
+  padding:14px 16px 10px;color:#fff;text-align:center;
+  position:sticky;top:0;z-index:100;box-shadow:var(--sh2)
+}
+.hdr h1{font-size:17px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
+.hdr .sub{font-size:11px;opacity:.8;margin-top:2px}
+.pbar-wrap{background:rgba(255,255,255,.2);height:4px;width:100%;margin-bottom:10px}
+.pbar{background:var(--gold);height:4px;transition:width .5s}
+
+/* ── CONTENT ── */
+.content{flex:1;padding:14px 14px 90px}
+.stage-lbl{text-align:center;margin-bottom:14px}
+.stage-lbl h2{font-size:18px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:2px}
+.stage-lbl p{font-size:12px;color:var(--txt2);margin-top:3px}
+
+/* ── MATCH CARD ── */
+.card{background:var(--card);border-radius:12px;box-shadow:var(--sh2);margin-bottom:14px;overflow:hidden}
+.card-hdr{
+  background:linear-gradient(90deg,var(--navy) 0%,#3949ab 100%);
+  color:#fff;padding:7px 12px;font-size:10px;font-weight:500;letter-spacing:.5px;
+  display:flex;justify-content:space-between;align-items:center
+}
+.card-hdr .badge{background:rgba(255,255,255,.2);border-radius:10px;padding:2px 8px;font-size:9px}
+.teams{display:flex;align-items:stretch;min-height:88px}
+.team-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:10px 6px;cursor:pointer;border:none;background:transparent;
+  font-family:'Roboto',sans-serif;position:relative;transition:background .15s
+}
+.team-btn:first-child{border-right:1px solid #e0e0e0}
+.team-btn.sel{background:linear-gradient(135deg,#e8eaf6,#c5cae9)}
+.team-btn.sel::after{
+  content:'✓';position:absolute;top:6px;right:7px;
+  background:var(--navy);color:#fff;border-radius:50%;
+  width:18px;height:18px;line-height:18px;font-size:11px;text-align:center
+}
+.flag{font-size:34px;line-height:1;margin-bottom:5px}
+.tname{font-size:12px;font-weight:600;text-align:center;line-height:1.2}
+.tshort{font-size:10px;color:var(--txt2);margin-top:2px}
+.vs{display:flex;align-items:center;justify-content:center;width:36px;font-size:10px;font-weight:700;color:var(--txt2);flex-shrink:0}
+.easter{
+  background:linear-gradient(90deg,#e65100,#ff6f00);color:#fff;
+  padding:8px 12px;font-size:12px;font-weight:600;text-align:center;
+  display:none;animation:slideIn .3s ease
+}
+.easter.show{display:block}
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── BOTTOM NAV ── */
+.bnav{
+  position:fixed;bottom:0;left:0;right:0;background:#fff;
+  padding:10px 14px;box-shadow:0 -2px 8px rgba(0,0,0,.12);
+  display:flex;gap:10px;z-index:200
+}
+.btn{
+  flex:1;padding:14px;border:none;border-radius:8px;
+  font-family:'Roboto',sans-serif;font-size:14px;font-weight:700;
+  cursor:pointer;text-transform:uppercase;letter-spacing:.5px;transition:all .15s
+}
+.btn-p{background:linear-gradient(135deg,var(--navy),#3949ab);color:#fff;box-shadow:0 4px 12px rgba(26,35,126,.4)}
+.btn-p:active{transform:scale(.97)}
+.btn-p:disabled{background:#bdbdbd;box-shadow:none;cursor:default}
+.btn-s{background:#fff;color:var(--navy);border:2px solid var(--navy)}
+
+/* ── PAGE DOTS ── */
+.dots{display:flex;justify-content:center;gap:8px;padding:6px 0 10px}
+.dot{width:8px;height:8px;border-radius:50%;background:#bdbdbd;transition:all .3s}
+.dot.active{background:var(--navy);width:24px;border-radius:4px}
+
+/* ── WELCOME ── */
+.hero{
+  background:linear-gradient(160deg,var(--dark-navy) 0%,var(--navy) 50%,var(--red) 100%);
+  padding:48px 24px 36px;text-align:center;color:#fff
+}
+.trophy{font-size:60px;display:block;margin-bottom:14px;animation:bounce 2s infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.hero h1{font-size:26px;font-weight:900;letter-spacing:2px}
+.hero .yr{font-size:56px;font-weight:900;color:var(--gold);line-height:1;display:block}
+.hero p{font-size:13px;opacity:.85;margin-top:6px}
+.name-section{padding:28px 20px;flex:1}
+.name-section label{display:block;font-size:11px;font-weight:500;color:var(--txt2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.name-input{
+  width:100%;padding:15px;border:2px solid #e0e0e0;border-radius:8px;
+  font-family:'Roboto',sans-serif;font-size:18px;font-weight:500;outline:none;
+  transition:border-color .2s
+}
+.name-input:focus{border-color:var(--navy)}
+.name-hint{font-size:11px;color:var(--txt2);margin-top:6px}
+
+/* ── BRACKET SCREEN ── */
+#screen-bracket{background:#0d47a1;color:#fff;overflow:hidden}
+.bracket-sticky{
+  background:linear-gradient(135deg,#0d47a1,#1565c0);
+  padding:14px 16px;text-align:center;position:sticky;top:0;z-index:100
+}
+.bracket-sticky .small{font-size:10px;color:var(--gold);font-weight:700;letter-spacing:2px;text-transform:uppercase}
+.bracket-sticky .big{font-size:19px;font-weight:900;color:#fff;letter-spacing:3px}
+.bracket-sticky .uname{font-size:13px;color:var(--gold);margin-top:3px}
+.rotate-hint{
+  margin:10px 14px 0;border:1px solid var(--gold);border-radius:8px;
+  padding:8px 14px;text-align:center;font-size:11px;color:var(--gold);
+  background:rgba(249,168,37,.1);display:flex;align-items:center;justify-content:center;gap:6px
+}
+.bracket-wrap{overflow:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 100px}
+/* Absolute-positioned match card inside the bracket stage */
+.bm{position:absolute;border-radius:5px;overflow:hidden;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2)}
+.bm .bt{height:18px;display:flex;align-items:center;gap:3px;padding:0 5px;font-size:9px;font-weight:500;border-bottom:1px solid rgba(255,255,255,.08);line-height:1}
+.bm .bt:last-child{border-bottom:none}
+.bm .bt.w{background:rgba(249,168,37,.32);font-weight:700}
+.bm .bt .f{font-size:12px;flex-shrink:0}
+.bm .bt .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+/* Final match card */
+.bm-final{background:rgba(249,168,37,.15);border:2px solid var(--gold)}
+.bm-final .bt{height:22px;font-size:10px}
+.bm-final .bt .f{font-size:14px}
+/* Champion crown */
+.champ-crown{position:absolute;border-radius:8px;background:linear-gradient(135deg,rgba(249,168,37,.35),rgba(249,168,37,.15));border:2px solid var(--gold);text-align:center}
+.champ-crown .ci{font-size:18px;display:block;margin-top:5px;line-height:1}
+.champ-crown .cf{font-size:18px;display:block;line-height:1;margin-top:2px}
+.champ-crown .cn{font-size:7px;font-weight:900;color:var(--gold);text-transform:uppercase;letter-spacing:.5px;margin:2px 0 5px}
+/* Round label above each column */
+.b-rlbl{position:absolute;font-size:8px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:rgba(249,168,37,.8);text-align:center}
+/* Final label */
+.b-flbl{position:absolute;font-size:9px;font-weight:900;color:var(--gold);text-align:center;letter-spacing:1px;text-transform:uppercase}
+/* Screenshot footer */
+.screenshot-cta{text-align:center;padding:16px;background:rgba(0,0,0,.3);margin:0 14px 16px;border-radius:8px}
+.screenshot-cta p{font-size:13px;color:var(--gold);font-weight:500}
+.screenshot-cta .big-name{font-size:22px;font-weight:900;color:#fff;margin-top:6px}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:82px;left:50%;transform:translateX(-50%);
+  background:#323232;color:#fff;padding:11px 18px;border-radius:8px;
+  font-size:13px;z-index:9999;opacity:0;transition:opacity .3s;white-space:nowrap
+}
+.toast.show{opacity:1}
+
+/* ── CHAMP CELEBRATE ── */
+.champ-reveal{
+  text-align:center;padding:24px 16px;background:linear-gradient(135deg,#fff3e0,#fff8e1);
+  border-radius:12px;margin-bottom:14px;border:2px solid var(--gold)
+}
+.champ-reveal .big-flag{font-size:64px;display:block;margin-bottom:8px}
+.champ-reveal h3{font-size:14px;color:var(--txt2);text-transform:uppercase;letter-spacing:1px}
+.champ-reveal h2{font-size:24px;font-weight:900;color:var(--navy);margin-top:4px}
+</style>
+</head>
+<body>
+
+<!-- Hidden YouTube player -->
+<div id="yt-player" style="position:fixed;top:-9999px;left:-9999px;width:1px;height:1px"></div>
+
+<!-- ══════════════════════════════════════
+     WELCOME SCREEN
+══════════════════════════════════════ -->
+<div id="screen-welcome" class="screen active">
+  <div class="hero">
+    <span class="trophy">🏆</span>
+    <h1>FIFA WORLD CUP</h1>
+    <span class="yr">2026</span>
+    <p>USA &bull; CANADA &bull; MEXICO</p>
+    <p style="margin-top:10px;font-size:12px;opacity:.75;font-weight:500;letter-spacing:1px">BRACKET PREDICTOR</p>
+  </div>
+  <div class="name-section">
+    <label for="uname">Your Name</label>
+    <input id="uname" class="name-input" type="text" placeholder="Enter your name…" autocomplete="given-name" />
+    <p class="name-hint">Your name will appear on your bracket — take a screenshot &amp; send it to Douglas!</p>
+  </div>
+  <div class="bnav">
+    <button class="btn btn-p" id="start-btn" disabled onclick="startApp()">⚽ LET'S PREDICT!</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     ROUND OF 32
+══════════════════════════════════════ -->
+<div id="screen-r32" class="screen">
+  <div class="hdr">
+    <div class="pbar-wrap"><div class="pbar" id="r32-pbar" style="width:5%"></div></div>
+    <h1>ROUND OF 32</h1>
+    <div class="sub" id="r32-sub">Page 1 of 4</div>
+  </div>
+  <div class="content" id="r32-content"></div>
+  <div class="bnav">
+    <button class="btn btn-s" id="r32-back" onclick="r32Back()" style="display:none">← BACK</button>
+    <button class="btn btn-p" id="r32-next" disabled onclick="r32Next()">NEXT →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     ROUND OF 16
+══════════════════════════════════════ -->
+<div id="screen-r16" class="screen">
+  <div class="hdr">
+    <div class="pbar-wrap"><div class="pbar" style="width:45%"></div></div>
+    <h1>ROUND OF 16</h1>
+    <div class="sub">Pick your 8 winners</div>
+  </div>
+  <div class="content" id="r16-content"></div>
+  <div class="bnav">
+    <button class="btn btn-s" onclick="goBack('r32')">← BACK</button>
+    <button class="btn btn-p" id="r16-next" disabled onclick="advance('qf')">NEXT →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     QUARTER-FINALS
+══════════════════════════════════════ -->
+<div id="screen-qf" class="screen">
+  <div class="hdr">
+    <div class="pbar-wrap"><div class="pbar" style="width:62%"></div></div>
+    <h1>QUARTER-FINALS</h1>
+    <div class="sub">Pick your 4 winners</div>
+  </div>
+  <div class="content" id="qf-content"></div>
+  <div class="bnav">
+    <button class="btn btn-s" onclick="goBack('r16')">← BACK</button>
+    <button class="btn btn-p" id="qf-next" disabled onclick="advance('sf')">NEXT →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SEMI-FINALS
+══════════════════════════════════════ -->
+<div id="screen-sf" class="screen">
+  <div class="hdr">
+    <div class="pbar-wrap"><div class="pbar" style="width:78%"></div></div>
+    <h1>SEMI-FINALS</h1>
+    <div class="sub">Pick your 2 finalists</div>
+  </div>
+  <div class="content" id="sf-content"></div>
+  <div class="bnav">
+    <button class="btn btn-s" onclick="goBack('qf')">← BACK</button>
+    <button class="btn btn-p" id="sf-next" disabled onclick="advance('final')">NEXT →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     FINAL
+══════════════════════════════════════ -->
+<div id="screen-final" class="screen">
+  <div class="hdr">
+    <div class="pbar-wrap"><div class="pbar" style="width:92%"></div></div>
+    <h1>🏆 THE FINAL 🏆</h1>
+    <div class="sub">Who will be World Champions?</div>
+  </div>
+  <div class="content" id="final-content"></div>
+  <div class="bnav">
+    <button class="btn btn-s" onclick="goBack('sf')">← BACK</button>
+    <button class="btn btn-p" id="final-next" disabled onclick="showBracket()">SEE MY BRACKET 🏆</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     BRACKET VIEW
+══════════════════════════════════════ -->
+<div id="screen-bracket" class="screen">
+  <div class="bracket-sticky">
+    <div class="small">FIFA World Cup 2026</div>
+    <div class="big">MY BRACKET</div>
+    <div class="uname" id="br-uname"></div>
+  </div>
+  <div class="rotate-hint">📱 Rotate to landscape then screenshot!</div>
+  <div class="bracket-wrap">
+    <div id="bracket-stage" style="position:relative"></div>
+  </div>
+  <div class="screenshot-cta">
+    <p>📸 Screenshot &amp; send to Douglas! ⚽</p>
+    <div class="big-name" id="br-name-footer"></div>
+  </div>
+  <div class="bnav">
+    <button class="btn btn-s" onclick="goBack('final')">← BACK</button>
+    <button class="btn btn-p" onclick="doShare()">📤 SEND TO DOUGLAS</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════
+// DATA
+// ══════════════════════════════════
+const T = {
+  'south-africa':{ name:'South Africa',  flag:'🇿🇦', short:'RSA' },
+  'canada':      { name:'Canada',         flag:'🇨🇦', short:'CAN' },
+  'brazil':      { name:'Brazil',         flag:'🇧🇷', short:'BRA' },
+  'japan':       { name:'Japan',          flag:'🇯🇵', short:'JPN' },
+  'germany':     { name:'Germany',        flag:'🇩🇪', short:'GER' },
+  'paraguay':    { name:'Paraguay',       flag:'🇵🇾', short:'PAR' },
+  'netherlands': { name:'Netherlands',    flag:'🇳🇱', short:'NED' },
+  'morocco':     { name:'Morocco',        flag:'🇲🇦', short:'MAR' },
+  'ivory-coast': { name:'Ivory Coast',    flag:'🇨🇮', short:'CIV' },
+  'norway':      { name:'Norway',         flag:'🇳🇴', short:'NOR' },
+  'france':      { name:'France',         flag:'🇫🇷', short:'FRA' },
+  'sweden':      { name:'Sweden',         flag:'🇸🇪', short:'SWE' },
+  'mexico':      { name:'Mexico',         flag:'🇲🇽', short:'MEX' },
+  'ecuador':     { name:'Ecuador',        flag:'🇪🇨', short:'ECU' },
+  'england':     { name:'England',        flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', short:'ENG' },
+  'dr-congo':    { name:'DR Congo',       flag:'🇨🇩', short:'COD' },
+  'usa':         { name:'USA',            flag:'🇺🇸', short:'USA' },
+  'bosnia':      { name:'Bosnia & Herz.', flag:'🇧🇦', short:'BIH' },
+  'belgium':     { name:'Belgium',        flag:'🇧🇪', short:'BEL' },
+  'senegal':     { name:'Senegal',        flag:'🇸🇳', short:'SEN' },
+  'spain':       { name:'Spain',          flag:'🇪🇸', short:'ESP' },
+  'austria':     { name:'Austria',        flag:'🇦🇹', short:'AUT' },
+  'portugal':    { name:'Portugal',       flag:'🇵🇹', short:'POR' },
+  'croatia':     { name:'Croatia',        flag:'🇭🇷', short:'CRO' },
+  'switzerland': { name:'Switzerland',    flag:'🇨🇭', short:'SUI' },
+  'algeria':     { name:'Algeria',        flag:'🇩🇿', short:'ALG' },
+  'australia':   { name:'Australia',      flag:'🇦🇺', short:'AUS' },
+  'egypt':       { name:'Egypt',          flag:'🇪🇬', short:'EGY' },
+  'argentina':   { name:'Argentina',      flag:'🇦🇷', short:'ARG' },
+  'cape-verde':  { name:'Cabo Verde',     flag:'🇨🇻', short:'CPV' },
+  'colombia':    { name:'Colombia',       flag:'🇨🇴', short:'COL' },
+  'ghana':       { name:'Ghana',          flag:'🇬🇭', short:'GHA' },
+};
+
+// 16 R32 matches (4 pages × 4 matches)
+const R32 = [
+  // Page 1
+  { t1:'south-africa', t2:'canada',     venue:'SoFi Stadium',           city:'Los Angeles, CA',         date:'Jun 28' },
+  { t1:'brazil',       t2:'japan',      venue:'NRG Stadium',             city:'Houston, TX',             date:'Jun 29' },
+  { t1:'germany',      t2:'paraguay',   venue:'Gillette Stadium',        city:'Foxborough (Boston), MA', date:'Jun 29' },
+  { t1:'netherlands',  t2:'morocco',    venue:'Estadio BBVA',            city:'Monterrey, Mexico',       date:'Jun 29' },
+  // Page 2
+  { t1:'ivory-coast',  t2:'norway',     venue:'AT&T Stadium',            city:'Arlington (Dallas), TX',  date:'Jun 30' },
+  { t1:'france',       t2:'sweden',     venue:'MetLife Stadium',         city:'East Rutherford (NY), NJ',date:'Jun 30' },
+  { t1:'mexico',       t2:'ecuador',    venue:'Estadio Azteca',          city:'Mexico City, Mexico',     date:'Jun 30' },
+  { t1:'england',      t2:'dr-congo',   venue:'Mercedes-Benz Stadium',   city:'Atlanta, GA',             date:'Jul 1'  },
+  // Page 3
+  { t1:'usa',          t2:'bosnia',     venue:"Levi's Stadium",          city:'San Jose (SF Bay), CA',   date:'Jul 1'  },
+  { t1:'belgium',      t2:'senegal',    venue:'Lumen Field',             city:'Seattle, WA',             date:'Jul 1'  },
+  { t1:'spain',        t2:'austria',    venue:'SoFi Stadium',            city:'Los Angeles, CA',         date:'Jul 2'  },
+  { t1:'portugal',     t2:'croatia',    venue:'BMO Field',               city:'Toronto, Canada',         date:'Jul 2'  },
+  // Page 4
+  { t1:'switzerland',  t2:'algeria',    venue:'BC Place',                city:'Vancouver, Canada',       date:'Jul 2'  },
+  { t1:'australia',    t2:'egypt',      venue:'AT&T Stadium',            city:'Arlington (Dallas), TX',  date:'Jul 3'  },
+  { t1:'argentina',    t2:'cape-verde', venue:'Hard Rock Stadium',       city:'Miami Gardens, FL',       date:'Jul 3'  },
+  { t1:'colombia',     t2:'ghana',      venue:'Arrowhead Stadium',       city:'Kansas City, MO',         date:'Jul 3'  },
+];
+
+// ══════════════════════════════════
+// STATE
+// ══════════════════════════════════
+const S = {
+  userName: '',
+  r32page: 0,
+  picks: {
+    r32:   new Array(16).fill(null),
+    r16:   new Array(8).fill(null),
+    qf:    new Array(4).fill(null),
+    sf:    new Array(2).fill(null),
+    final: null
+  }
+};
+
+// ══════════════════════════════════
+// YOUTUBE (Shakira – Waka Waka)
+// ══════════════════════════════════
+let ytPlayer, ytLoaded = false;
+
+function loadYT() {
+  if (ytLoaded) return;
+  ytLoaded = true;
+  const s = document.createElement('script');
+  s.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(s);
+}
+
+window.onYouTubeIframeAPIReady = function() {
+  ytPlayer = new YT.Player('yt-player', {
+    videoId: 'pRpeEdMmmQ0',
+    playerVars: { autoplay:1, loop:1, playlist:'pRpeEdMmmQ0', controls:0 },
+    events: {
+      onReady(e) { e.target.setVolume(35); e.target.playVideo(); }
+    }
+  });
+};
+
+// ══════════════════════════════════
+// SCREEN NAVIGATION
+// ══════════════════════════════════
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goBack(id) {
+  if (id === 'r32') { show('r32'); return; }
+  show(id);
+}
+
+// ══════════════════════════════════
+// START
+// ══════════════════════════════════
+function startApp() {
+  const n = document.getElementById('uname').value.trim();
+  if (!n) return;
+  S.userName = n;
+  loadYT();
+  S.r32page = 0;
+  renderR32();
+  show('r32');
+}
+
+// ══════════════════════════════════
+// R32 RENDER
+// ══════════════════════════════════
+function renderR32() {
+  const pg = S.r32page;
+  const start = pg * 4;
+  document.getElementById('r32-sub').textContent = `Page ${pg+1} of 4 · Matches ${start+1}–${start+4}`;
+  document.getElementById('r32-pbar').style.width = (5 + pg*10) + '%';
+  document.getElementById('r32-back').style.display = pg === 0 ? 'none' : '';
+
+  let html = `<div class="dots">`;
+  for (let i=0;i<4;i++) html += `<div class="dot${i===pg?' active':''}"></div>`;
+  html += `</div><div class="stage-lbl"><h2>Round of 32</h2><p>Tap a team to pick the winner</p></div>`;
+
+  for (let i=0; i<4; i++) {
+    const idx = start + i;
+    const m = R32[idx];
+    const t1 = T[m.t1], t2 = T[m.t2];
+    const pick = S.picks.r32[idx];
+    const isEaster = m.t1 === 'colombia' && m.t2 === 'ghana';
+
+    html += `<div class="card">
+      <div class="card-hdr">
+        <span>📍 ${m.venue} · ${m.city}</span>
+        <span class="badge">M${idx+1} · ${m.date}</span>
+      </div>
+      <div class="teams">
+        <button class="team-btn${pick===m.t1?' sel':''}" onclick="pickR32(${idx},'${m.t1}')">
+          <div class="flag">${t1.flag}</div>
+          <div class="tname">${t1.name}</div>
+          <div class="tshort">${t1.short}</div>
+        </button>
+        <div class="vs">VS</div>
+        <button class="team-btn${pick===m.t2?' sel':''}" onclick="pickR32(${idx},'${m.t2}')">
+          <div class="flag">${t2.flag}</div>
+          <div class="tname">${t2.name}</div>
+          <div class="tshort">${t2.short}</div>
+        </button>
+      </div>
+      ${isEaster ? `<div class="easter${pick==='colombia'?' show':''}" id="ee-${idx}">😤 Going against Ghana? I hate you</div>` : ''}
+    </div>`;
+  }
+
+  document.getElementById('r32-content').innerHTML = html;
+  const allPicked = S.picks.r32.slice(start, start+4).every(p => p !== null);
+  document.getElementById('r32-next').disabled = !allPicked;
+  document.getElementById('r32-next').textContent = pg === 3 ? 'GO TO R16 →' : 'NEXT →';
+}
+
+function pickR32(idx, team) {
+  S.picks.r32[idx] = team;
+  renderR32();
+}
+
+function r32Next() {
+  if (S.r32page < 3) { S.r32page++; renderR32(); window.scrollTo(0,0); }
+  else advance('r16');
+}
+
+function r32Back() {
+  if (S.r32page > 0) { S.r32page--; renderR32(); window.scrollTo(0,0); }
+}
+
+// ══════════════════════════════════
+// STAGE HELPERS
+// ══════════════════════════════════
+const STAGE_CFG = {
+  r16:   { emoji:'⚔️',  label:'Round of 16',   count:8, prev:'r32', next:'qf',   nextBtn:'r16-next' },
+  qf:    { emoji:'🔥',  label:'Quarter-Finals', count:4, prev:'r16', next:'sf',   nextBtn:'qf-next'  },
+  sf:    { emoji:'⚡',  label:'Semi-Finals',    count:2, prev:'qf',  next:'final',nextBtn:'sf-next'  },
+  final: { emoji:'🏆',  label:'The Final',      count:1, prev:'sf',  next:null,   nextBtn:'final-next'},
+};
+
+function getTeams(stage, i) {
+  if (stage==='r16')   return [S.picks.r32[i*2],  S.picks.r32[i*2+1]];
+  if (stage==='qf')    return [S.picks.r16[i*2],  S.picks.r16[i*2+1]];
+  if (stage==='sf')    return [S.picks.qf[i*2],   S.picks.qf[i*2+1]];
+  if (stage==='final') return [S.picks.sf[0],      S.picks.sf[1]];
+}
+
+function getPick(stage, i) {
+  return stage==='final' ? S.picks.final : S.picks[stage][i];
+}
+
+function setPick(stage, i, team) {
+  if (stage==='final') S.picks.final = team;
+  else S.picks[stage][i] = team;
+}
+
+function advance(to) {
+  renderStage(to);
+  show(to);
+}
+
+function renderStage(stage) {
+  const cfg = STAGE_CFG[stage];
+  let html = `<div class="stage-lbl"><h2>${cfg.emoji} ${cfg.label}</h2><p>Tap a team to pick the winner</p></div>`;
+
+  for (let i=0; i<cfg.count; i++) {
+    const [k1, k2] = getTeams(stage, i);
+    const pick = getPick(stage, i);
+
+    if (!k1 || !k2) {
+      html += `<div class="card" style="padding:18px;text-align:center;color:var(--txt2)">⚠️ Complete previous round first</div>`;
+      continue;
+    }
+
+    const t1 = T[k1], t2 = T[k2];
+    html += `<div class="card">
+      <div class="card-hdr">
+        <span>${cfg.label} · Match ${i+1}</span>
+      </div>
+      <div class="teams">
+        <button class="team-btn${pick===k1?' sel':''}" onclick="stgPick('${stage}',${i},'${k1}')">
+          <div class="flag">${t1.flag}</div>
+          <div class="tname">${t1.name}</div>
+          <div class="tshort">${t1.short}</div>
+        </button>
+        <div class="vs">VS</div>
+        <button class="team-btn${pick===k2?' sel':''}" onclick="stgPick('${stage}',${i},'${k2}')">
+          <div class="flag">${t2.flag}</div>
+          <div class="tname">${t2.name}</div>
+          <div class="tshort">${t2.short}</div>
+        </button>
+      </div>
+    </div>`;
+  }
+
+  // If final, also show champion reveal after pick
+  if (stage === 'final' && S.picks.final) {
+    const champ = T[S.picks.final];
+    html += `<div class="champ-reveal">
+      <span class="big-flag">${champ.flag}</span>
+      <h3>Your World Champion</h3>
+      <h2>${champ.name} ${champ.flag}</h2>
+    </div>`;
+  }
+
+  document.getElementById(stage + '-content').innerHTML = html;
+  checkDone(stage, cfg);
+}
+
+function stgPick(stage, i, team) {
+  setPick(stage, i, team);
+  renderStage(stage);
+}
+
+function checkDone(stage, cfg) {
+  const done = stage === 'final'
+    ? S.picks.final !== null
+    : S.picks[stage].slice(0, cfg.count).every(p => p !== null);
+  document.getElementById(cfg.nextBtn).disabled = !done;
+  document.getElementById(cfg.nextBtn).textContent =
+    stage === 'final' ? 'SEE MY BRACKET 🏆' : 'NEXT →';
+}
+
+// ══════════════════════════════════
+// BRACKET VIEW — tree layout
+// ══════════════════════════════════
+function showBracket() {
+  document.getElementById('br-uname').textContent = `📋 ${S.userName}'s Picks`;
+  document.getElementById('br-name-footer').textContent = S.userName;
+
+  // Layout constants
+  const SL=44, MH=36, MW=68, CO=16, CC=22, FW=92;
+  const PTOP=18; // top padding for round labels
+
+  // Column x positions (left → right)
+  const xA=0, xB=MW+CO, xC=2*(MW+CO), xD=3*(MW+CO);
+  const xF=xD+MW+CC;                // FINAL left edge
+  const xE2=xF+FW+CC;               // SF-right left edge
+  const xC2=xE2+(MW+CO);            // QF-right
+  const xB2=xE2+2*(MW+CO);          // R16-right
+  const xA2=xE2+3*(MW+CO);          // R32-right
+  const TW=xA2+MW;                   // total width
+
+  // Match top & center-Y (without PTOP — added separately)
+  function mt(r,i){ const s=1<<r; return i*s*SL+(s-1)*SL/2; }
+  function rcy(r,i){ return mt(r,i)+MH/2; } // raw center Y (no PTOP)
+  function cy(r,i){ return rcy(r,i)+PTOP; } // SVG center Y (includes PTOP)
+
+  const STAGE_H = 7*SL+MH+PTOP+80; // room for labels + champion crown
+
+  let html='';
+
+  // Round labels
+  const lbls=[
+    [xA,'R32'],[xB,'R16'],[xC,'QF'],[xD,'SF'],
+    [xF+(FW-MW)/2,'FINAL'],
+    [xE2,'SF'],[xC2,'QF'],[xB2,'R16'],[xA2,'R32'],
+  ];
+  lbls.forEach(([x,t])=>{
+    html+=`<div class="b-rlbl" style="left:${x}px;top:0;width:${MW}px">${t}</div>`;
+  });
+
+  // Render one match card
+  function mc(x,y,k1,k2,winner,fin){
+    const t1=k1?T[k1]:null, t2=k2?T[k2]:null;
+    const h=fin?48:MH;
+    const cls=fin?'bm bm-final':'bm';
+    html+=`<div class="${cls}" style="left:${x}px;top:${PTOP+y}px;width:${MW}px;height:${h}px">`+
+      `<div class="bt${winner===k1?' w':''}"><span class="f">${t1?t1.flag:'?'}</span><span class="n">${t1?t1.short:'TBD'}</span></div>`+
+      `<div class="bt${winner===k2?' w':''}"><span class="f">${t2?t2.flag:'?'}</span><span class="n">${t2?t2.short:'TBD'}</span></div>`+
+      `</div>`;
+  }
+
+  // LEFT side: R32[0-7], R16[0-3], QF[0-1], SF[0]
+  for(let i=0;i<8;i++) mc(xA,mt(0,i),R32[i].t1,R32[i].t2,S.picks.r32[i]);
+  for(let i=0;i<4;i++) mc(xB,mt(1,i),S.picks.r32[i*2],S.picks.r32[i*2+1],S.picks.r16[i]);
+  for(let i=0;i<2;i++) mc(xC,mt(2,i),S.picks.r16[i*2],S.picks.r16[i*2+1],S.picks.qf[i]);
+  mc(xD,mt(3,0),S.picks.qf[0],S.picks.qf[1],S.picks.sf[0]);
+
+  // FINAL (centered on cy(3,0))
+  const FH=48, fTop=rcy(3,0)-FH/2;
+  mc(xF,fTop,S.picks.sf[0],S.picks.sf[1],S.picks.final,true);
+
+  // Champion crown below FINAL
+  if(S.picks.final){
+    const ch=T[S.picks.final];
+    html+=`<div class="champ-crown" style="left:${xF}px;top:${PTOP+fTop+FH+8}px;width:${FW}px;height:54px">`+
+      `<span class="ci">🏆</span><span class="cf">${ch.flag}</span><div class="cn">${ch.name}</div></div>`;
+  }
+
+  // RIGHT side: SF[1], QF[2-3], R16[4-7], R32[8-15]
+  mc(xE2,mt(3,0),S.picks.qf[2],S.picks.qf[3],S.picks.sf[1]);
+  for(let i=0;i<2;i++) mc(xC2,mt(2,i),S.picks.r16[(i+2)*2],S.picks.r16[(i+2)*2+1],S.picks.qf[i+2]);
+  for(let i=0;i<4;i++) mc(xB2,mt(1,i),S.picks.r32[(i+4)*2],S.picks.r32[(i+4)*2+1],S.picks.r16[i+4]);
+  for(let i=0;i<8;i++) mc(xA2,mt(0,i),R32[i+8].t1,R32[i+8].t2,S.picks.r32[i+8]);
+
+  // ── SVG connector lines ──
+  const paths=[];
+  const CO2=CO/2;
+
+  // LEFT: R32→R16, R16→QF, QF→SF
+  const LX=[xA,xB,xC,xD];
+  for(let r=0;r<3;r++){
+    const rx=LX[r]+MW, lx=LX[r+1], mx=rx+CO2, cnt=8>>r;
+    for(let p=0;p<cnt/2;p++){
+      const y1=cy(r,p*2),y2=cy(r,p*2+1),y3=cy(r+1,p);
+      paths.push(`M${rx},${y1}H${mx}M${rx},${y2}H${mx}M${mx},${y1}V${y2}M${mx},${y3}H${lx}`);
+    }
+  }
+  // SF-L → FINAL
+  paths.push(`M${xD+MW},${cy(3,0)}H${xF}`);
+  // FINAL → SF-R
+  paths.push(`M${xF+FW},${cy(3,0)}H${xE2}`);
+
+  // RIGHT: SF→QF, QF→R16, R16→R32 (fan outward)
+  const RX=[xE2,xC2,xB2,xA2];
+  for(let r=0;r<3;r++){
+    const rx=RX[r]+MW, lx=RX[r+1], mx=rx+CO2;
+    const innerR=3-r, outerR=2-r, innerCnt=1<<r;
+    for(let p=0;p<innerCnt;p++){
+      const yi=cy(innerR,p), y1=cy(outerR,p*2), y2=cy(outerR,p*2+1);
+      paths.push(`M${rx},${yi}H${mx}M${mx},${y1}V${y2}M${mx},${y1}H${lx}M${mx},${y2}H${lx}`);
+    }
+  }
+
+  html+=`<svg width="${TW}" height="${STAGE_H}" style="position:absolute;top:0;left:0;pointer-events:none" overflow="visible">`+
+    `<path d="${paths.join(' ')}" stroke="rgba(249,168,37,.55)" fill="none" stroke-width="1.5" stroke-linecap="round"/>`+
+    `</svg>`;
+
+  const stage=document.getElementById('bracket-stage');
+  stage.style.cssText=`position:relative;width:${TW}px;height:${STAGE_H}px`;
+  stage.innerHTML=html;
+  show('bracket');
+}
+
+// ══════════════════════════════════
+// SHARE
+// ══════════════════════════════════
+function doShare() {
+  const ch = S.picks.final ? T[S.picks.final] : null;
+  const txt = `🏆 ${S.userName}'s 2026 World Cup Bracket\nMy Champion: ${ch ? ch.name + ' ' + ch.flag : '?'}\n\n⚽ FIFA World Cup 2026`;
+  if (navigator.share) {
+    navigator.share({ title: 'My World Cup 2026 Bracket', text: txt });
+  } else {
+    navigator.clipboard.writeText(txt).then(() => toast('Copied! Now send to Douglas 📱'));
+  }
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ══════════════════════════════════
+// INIT
+// ══════════════════════════════════
+const uname = document.getElementById('uname');
+uname.addEventListener('input', () => {
+  document.getElementById('start-btn').disabled = uname.value.trim().length === 0;
+});
+uname.addEventListener('keydown', e => { if (e.key==='Enter' && uname.value.trim()) startApp(); });
+</script>
+</body>
+</html>
