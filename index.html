@@ -166,6 +166,7 @@ body{font-family:'Roboto',sans-serif;background:var(--bg);min-height:100vh;color
 .champ-reveal h2{font-size:24px;font-weight:900;color:var(--navy);margin-top:4px}
 
 /* ── MUSIC FAB ── */
+/*
 #music-fab{
   position:fixed;bottom:72px;right:14px;z-index:400;
   width:42px;height:42px;border-radius:50%;
@@ -179,6 +180,7 @@ body{font-family:'Roboto',sans-serif;background:var(--bg);min-height:100vh;color
   display:none;border-radius:10px;overflow:hidden;
   box-shadow:0 4px 16px rgba(0,0,0,.5)
 }
+*/
 
 /* ── LANDSCAPE BRACKET ── */
 @media (orientation:landscape){
@@ -192,11 +194,13 @@ body{font-family:'Roboto',sans-serif;background:var(--bg);min-height:100vh;color
 <body>
 
 <!-- Floating music button -->
+<!--
 <div id="music-fab" onclick="toggleMusic()" title="Play Waka Waka 🎶">🎵</div>
 <div id="music-panel">
   <iframe id="yt-frame" width="200" height="113" frameborder="0"
     allow="autoplay;encrypted-media" allowfullscreen></iframe>
 </div>
+-->
 
 <!-- ══════════════════════════════════════
      WELCOME SCREEN
@@ -406,6 +410,7 @@ const S = {
 // ══════════════════════════════════
 // MUSIC (Shakira – Waka Waka)
 // ══════════════════════════════════
+/*
 let musicOn = false;
 function toggleMusic() {
   musicOn = !musicOn;
@@ -422,6 +427,7 @@ function toggleMusic() {
     fab.textContent = '🎵';
   }
 }
+*/
 
 // ══════════════════════════════════
 // SCREEN NAVIGATION
