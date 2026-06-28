@@ -45,7 +45,8 @@ body{font-family:'Roboto',sans-serif;background:var(--bg);min-height:100vh;color
 .team-btn{
   flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:10px 6px;cursor:pointer;border:none;background:transparent;
-  font-family:'Roboto',sans-serif;position:relative;transition:background .15s
+  font-family:'Roboto',sans-serif;position:relative;transition:background .15s;
+  touch-action:manipulation
 }
 .team-btn:first-child{border-right:1px solid #e0e0e0}
 .team-btn.sel{background:linear-gradient(135deg,#e8eaf6,#c5cae9)}
@@ -75,7 +76,8 @@ body{font-family:'Roboto',sans-serif;background:var(--bg);min-height:100vh;color
 .btn{
   flex:1;padding:14px;border:none;border-radius:8px;
   font-family:'Roboto',sans-serif;font-size:14px;font-weight:700;
-  cursor:pointer;text-transform:uppercase;letter-spacing:.5px;transition:all .15s
+  cursor:pointer;text-transform:uppercase;letter-spacing:.5px;transition:all .15s;
+  touch-action:manipulation
 }
 .btn-p{background:linear-gradient(135deg,var(--navy),#3949ab);color:#fff;box-shadow:0 4px 12px rgba(26,35,126,.4)}
 .btn-p:active{transform:scale(.97)}
@@ -124,11 +126,10 @@ body{font-family:'Roboto',sans-serif;background:var(--bg);min-height:100vh;color
 .bracket-wrap{overflow:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 100px}
 /* Absolute-positioned match card inside the bracket stage */
 .bm{position:absolute;border-radius:5px;overflow:hidden;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2)}
-.bm .bt{height:18px;display:flex;align-items:center;gap:3px;padding:0 5px;font-size:9px;font-weight:500;border-bottom:1px solid rgba(255,255,255,.08);line-height:1}
+.bm .bt{height:18px;display:flex;align-items:center;justify-content:center;padding:0 3px;font-size:9px;font-weight:500;border-bottom:1px solid rgba(255,255,255,.08);line-height:1}
 .bm .bt:last-child{border-bottom:none}
 .bm .bt.w{background:rgba(249,168,37,.32);font-weight:700}
-.bm .bt .f{font-size:12px;flex-shrink:0}
-.bm .bt .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.bm .bt .f{font-size:16px;flex-shrink:0}
 /* Final match card */
 .bm-final{background:rgba(249,168,37,.15);border:2px solid var(--gold)}
 .bm-final .bt{height:22px;font-size:10px}
@@ -163,12 +164,39 @@ body{font-family:'Roboto',sans-serif;background:var(--bg);min-height:100vh;color
 .champ-reveal .big-flag{font-size:64px;display:block;margin-bottom:8px}
 .champ-reveal h3{font-size:14px;color:var(--txt2);text-transform:uppercase;letter-spacing:1px}
 .champ-reveal h2{font-size:24px;font-weight:900;color:var(--navy);margin-top:4px}
+
+/* ── MUSIC FAB ── */
+#music-fab{
+  position:fixed;bottom:72px;right:14px;z-index:400;
+  width:42px;height:42px;border-radius:50%;
+  background:var(--red);color:#fff;font-size:20px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 3px 10px rgba(0,0,0,.4);cursor:pointer;
+  touch-action:manipulation;user-select:none
+}
+#music-panel{
+  position:fixed;bottom:120px;right:14px;z-index:400;
+  display:none;border-radius:10px;overflow:hidden;
+  box-shadow:0 4px 16px rgba(0,0,0,.5)
+}
+
+/* ── LANDSCAPE BRACKET ── */
+@media (orientation:landscape){
+  .rotate-hint{display:none}
+  .screenshot-cta{display:none}
+  .bracket-sticky{padding:6px 16px}
+  .bracket-wrap{padding:6px 14px 62px}
+}
 </style>
 </head>
 <body>
 
-<!-- Hidden YouTube player -->
-<div id="yt-player" style="position:fixed;top:-9999px;left:-9999px;width:1px;height:1px"></div>
+<!-- Floating music button -->
+<div id="music-fab" onclick="toggleMusic()" title="Play Waka Waka 🎶">🎵</div>
+<div id="music-panel">
+  <iframe id="yt-frame" width="200" height="113" frameborder="0"
+    allow="autoplay;encrypted-media" allowfullscreen></iframe>
+</div>
 
 <!-- ══════════════════════════════════════
      WELCOME SCREEN
@@ -290,7 +318,7 @@ body{font-family:'Roboto',sans-serif;background:var(--bg);min-height:100vh;color
   </div>
   <div class="bnav">
     <button class="btn btn-s" onclick="goBack('final')">← BACK</button>
-    <button class="btn btn-p" onclick="doShare()">📤 SEND TO DOUGLAS</button>
+    <button class="btn btn-p" onclick="doShare()">📤 Send Txt Tree to Douglas</button>
   </div>
 </div>
 
@@ -376,27 +404,24 @@ const S = {
 };
 
 // ══════════════════════════════════
-// YOUTUBE (Shakira – Waka Waka)
+// MUSIC (Shakira – Waka Waka)
 // ══════════════════════════════════
-let ytPlayer, ytLoaded = false;
-
-function loadYT() {
-  if (ytLoaded) return;
-  ytLoaded = true;
-  const s = document.createElement('script');
-  s.src = 'https://www.youtube.com/iframe_api';
-  document.head.appendChild(s);
+let musicOn = false;
+function toggleMusic() {
+  musicOn = !musicOn;
+  const fab = document.getElementById('music-fab');
+  const panel = document.getElementById('music-panel');
+  const frame = document.getElementById('yt-frame');
+  if (musicOn) {
+    frame.src = 'https://www.youtube.com/embed/pRpeEdMmmQ0?autoplay=1&loop=1&playlist=pRpeEdMmmQ0';
+    panel.style.display = 'block';
+    fab.textContent = '🔇';
+  } else {
+    frame.src = '';
+    panel.style.display = 'none';
+    fab.textContent = '🎵';
+  }
 }
-
-window.onYouTubeIframeAPIReady = function() {
-  ytPlayer = new YT.Player('yt-player', {
-    videoId: 'pRpeEdMmmQ0',
-    playerVars: { autoplay:1, loop:1, playlist:'pRpeEdMmmQ0', controls:0 },
-    events: {
-      onReady(e) { e.target.setVolume(35); e.target.playVideo(); }
-    }
-  });
-};
 
 // ══════════════════════════════════
 // SCREEN NAVIGATION
@@ -419,7 +444,6 @@ function startApp() {
   const n = document.getElementById('uname').value.trim();
   if (!n) return;
   S.userName = n;
-  loadYT();
   S.r32page = 0;
   renderR32();
   show('r32');
@@ -588,25 +612,23 @@ function showBracket() {
   document.getElementById('br-uname').textContent = `📋 ${S.userName}'s Picks`;
   document.getElementById('br-name-footer').textContent = S.userName;
 
-  // Layout constants
-  const SL=44, MH=36, MW=68, CO=16, CC=22, FW=92;
-  const PTOP=18; // top padding for round labels
+  // Layout constants — flags only, compact
+  const SL=44, MH=36, MW=52, CO=12, CC=18, FW=68;
+  const PTOP=18;
 
-  // Column x positions (left → right)
   const xA=0, xB=MW+CO, xC=2*(MW+CO), xD=3*(MW+CO);
-  const xF=xD+MW+CC;                // FINAL left edge
-  const xE2=xF+FW+CC;               // SF-right left edge
-  const xC2=xE2+(MW+CO);            // QF-right
-  const xB2=xE2+2*(MW+CO);          // R16-right
-  const xA2=xE2+3*(MW+CO);          // R32-right
-  const TW=xA2+MW;                   // total width
+  const xF=xD+MW+CC;
+  const xE2=xF+FW+CC;
+  const xC2=xE2+(MW+CO);
+  const xB2=xE2+2*(MW+CO);
+  const xA2=xE2+3*(MW+CO);
+  const TW=xA2+MW;
 
-  // Match top & center-Y (without PTOP — added separately)
   function mt(r,i){ const s=1<<r; return i*s*SL+(s-1)*SL/2; }
-  function rcy(r,i){ return mt(r,i)+MH/2; } // raw center Y (no PTOP)
-  function cy(r,i){ return rcy(r,i)+PTOP; } // SVG center Y (includes PTOP)
+  function rcy(r,i){ return mt(r,i)+MH/2; }
+  function cy(r,i){ return rcy(r,i)+PTOP; }
 
-  const STAGE_H = 7*SL+MH+PTOP+80; // room for labels + champion crown
+  const STAGE_H = 7*SL+MH+PTOP+80;
 
   let html='';
 
@@ -620,45 +642,44 @@ function showBracket() {
     html+=`<div class="b-rlbl" style="left:${x}px;top:0;width:${MW}px">${t}</div>`;
   });
 
-  // Render one match card
+  // Flags-only match card
   function mc(x,y,k1,k2,winner,fin){
     const t1=k1?T[k1]:null, t2=k2?T[k2]:null;
     const h=fin?48:MH;
     const cls=fin?'bm bm-final':'bm';
     html+=`<div class="${cls}" style="left:${x}px;top:${PTOP+y}px;width:${MW}px;height:${h}px">`+
-      `<div class="bt${winner===k1?' w':''}"><span class="f">${t1?t1.flag:'?'}</span><span class="n">${t1?t1.short:'TBD'}</span></div>`+
-      `<div class="bt${winner===k2?' w':''}"><span class="f">${t2?t2.flag:'?'}</span><span class="n">${t2?t2.short:'TBD'}</span></div>`+
+      `<div class="bt${winner===k1?' w':''}"><span class="f">${t1?t1.flag:'?'}</span></div>`+
+      `<div class="bt${winner===k2?' w':''}"><span class="f">${t2?t2.flag:'?'}</span></div>`+
       `</div>`;
   }
 
-  // LEFT side: R32[0-7], R16[0-3], QF[0-1], SF[0]
+  // LEFT: R32[0-7], R16[0-3], QF[0-1], SF[0]
   for(let i=0;i<8;i++) mc(xA,mt(0,i),R32[i].t1,R32[i].t2,S.picks.r32[i]);
   for(let i=0;i<4;i++) mc(xB,mt(1,i),S.picks.r32[i*2],S.picks.r32[i*2+1],S.picks.r16[i]);
   for(let i=0;i<2;i++) mc(xC,mt(2,i),S.picks.r16[i*2],S.picks.r16[i*2+1],S.picks.qf[i]);
   mc(xD,mt(3,0),S.picks.qf[0],S.picks.qf[1],S.picks.sf[0]);
 
-  // FINAL (centered on cy(3,0))
+  // FINAL
   const FH=48, fTop=rcy(3,0)-FH/2;
   mc(xF,fTop,S.picks.sf[0],S.picks.sf[1],S.picks.final,true);
 
-  // Champion crown below FINAL
+  // Champion crown
   if(S.picks.final){
     const ch=T[S.picks.final];
     html+=`<div class="champ-crown" style="left:${xF}px;top:${PTOP+fTop+FH+8}px;width:${FW}px;height:54px">`+
       `<span class="ci">🏆</span><span class="cf">${ch.flag}</span><div class="cn">${ch.name}</div></div>`;
   }
 
-  // RIGHT side: SF[1], QF[2-3], R16[4-7], R32[8-15]
+  // RIGHT: SF[1], QF[2-3], R16[4-7], R32[8-15]
   mc(xE2,mt(3,0),S.picks.qf[2],S.picks.qf[3],S.picks.sf[1]);
   for(let i=0;i<2;i++) mc(xC2,mt(2,i),S.picks.r16[(i+2)*2],S.picks.r16[(i+2)*2+1],S.picks.qf[i+2]);
   for(let i=0;i<4;i++) mc(xB2,mt(1,i),S.picks.r32[(i+4)*2],S.picks.r32[(i+4)*2+1],S.picks.r16[i+4]);
   for(let i=0;i<8;i++) mc(xA2,mt(0,i),R32[i+8].t1,R32[i+8].t2,S.picks.r32[i+8]);
 
-  // ── SVG connector lines ──
+  // SVG connector lines
   const paths=[];
   const CO2=CO/2;
 
-  // LEFT: R32→R16, R16→QF, QF→SF
   const LX=[xA,xB,xC,xD];
   for(let r=0;r<3;r++){
     const rx=LX[r]+MW, lx=LX[r+1], mx=rx+CO2, cnt=8>>r;
@@ -667,12 +688,9 @@ function showBracket() {
       paths.push(`M${rx},${y1}H${mx}M${rx},${y2}H${mx}M${mx},${y1}V${y2}M${mx},${y3}H${lx}`);
     }
   }
-  // SF-L → FINAL
   paths.push(`M${xD+MW},${cy(3,0)}H${xF}`);
-  // FINAL → SF-R
   paths.push(`M${xF+FW},${cy(3,0)}H${xE2}`);
 
-  // RIGHT: SF→QF, QF→R16, R16→R32 (fan outward)
   const RX=[xE2,xC2,xB2,xA2];
   for(let r=0;r<3;r++){
     const rx=RX[r]+MW, lx=RX[r+1], mx=rx+CO2;
@@ -690,19 +708,74 @@ function showBracket() {
   const stage=document.getElementById('bracket-stage');
   stage.style.cssText=`position:relative;width:${TW}px;height:${STAGE_H}px`;
   stage.innerHTML=html;
+
+  // Scale to fit viewport in landscape (no scrolling needed)
+  requestAnimationFrame(() => {
+    const isLandscape = window.innerWidth > window.innerHeight;
+    if (isLandscape) {
+      const availW = window.innerWidth - 28;
+      const availH = window.innerHeight - 95;
+      const scale = Math.min(availW / TW, availH / STAGE_H, 1);
+      if (scale < 1) {
+        stage.style.transform = `scale(${scale})`;
+        stage.style.transformOrigin = 'top left';
+        const wrap = stage.parentElement;
+        wrap.style.height = Math.ceil(STAGE_H * scale + 10) + 'px';
+        wrap.style.overflow = 'hidden';
+      }
+    } else {
+      stage.style.transform = '';
+      stage.parentElement.style.height = '';
+      stage.parentElement.style.overflow = '';
+    }
+  });
+
   show('bracket');
 }
+
+window.addEventListener('orientationchange', () => {
+  if (document.getElementById('screen-bracket').classList.contains('active')) {
+    setTimeout(showBracket, 350);
+  }
+});
 
 // ══════════════════════════════════
 // SHARE
 // ══════════════════════════════════
+function buildTextTree() {
+  const p = S.picks;
+  const f = k => k ? T[k].flag + T[k].short : '❓';
+  const m = (k1, k2, w) => `  ${f(k1)} vs ${f(k2)} → ${f(w)}`;
+  return [
+    `🏆 ${S.userName}'s 2026 World Cup Bracket`,
+    '',
+    '── ROUND OF 32 ──────────────────',
+    ...R32.map((r,i) => m(r.t1, r.t2, p.r32[i])),
+    '',
+    '── ROUND OF 16 ──────────────────',
+    ...Array.from({length:8},(_,i) => m(p.r32[i*2], p.r32[i*2+1], p.r16[i])),
+    '',
+    '── QUARTER-FINALS ───────────────',
+    ...Array.from({length:4},(_,i) => m(p.r16[i*2], p.r16[i*2+1], p.qf[i])),
+    '',
+    '── SEMI-FINALS ──────────────────',
+    ...Array.from({length:2},(_,i) => m(p.qf[i*2], p.qf[i*2+1], p.sf[i])),
+    '',
+    '── THE FINAL ────────────────────',
+    m(p.sf[0], p.sf[1], p.final),
+    '',
+    p.final ? `🏆 CHAMPION: ${T[p.final].flag} ${T[p.final].name.toUpperCase()}!` : '🏆 CHAMPION: ?',
+    '',
+    '⚽ FIFA World Cup 2026'
+  ].join('\n');
+}
+
 function doShare() {
-  const ch = S.picks.final ? T[S.picks.final] : null;
-  const txt = `🏆 ${S.userName}'s 2026 World Cup Bracket\nMy Champion: ${ch ? ch.name + ' ' + ch.flag : '?'}\n\n⚽ FIFA World Cup 2026`;
+  const txt = buildTextTree();
   if (navigator.share) {
     navigator.share({ title: 'My World Cup 2026 Bracket', text: txt });
   } else {
-    navigator.clipboard.writeText(txt).then(() => toast('Copied! Now send to Douglas 📱'));
+    navigator.clipboard.writeText(txt).then(() => toast('Copied! Paste into WhatsApp or iMessage 📱'));
   }
 }
 
